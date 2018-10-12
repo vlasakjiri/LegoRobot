@@ -3,13 +3,15 @@
 import time
 
 from modules.helpers import *
-from modules.IO import IO
+from modules.io import IO
+
 
 def Main():
     io = IO()
     while(True):
         debug_print(io.directions_free())
-        time.sleep(1)
+        time.sleep(5)
+
 
 if __name__ == "__main__":
     Main()
