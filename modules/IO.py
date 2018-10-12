@@ -45,13 +45,10 @@ class IO():
         values = []
         self.sensor_motor.on_for_degrees(-20, 90)
         values.append(self.color_sensor.reflected_light_intensity)
-        time.sleep(0.5)
         self.sensor_motor.on_for_degrees(20, 90)
         values.append(self.color_sensor.reflected_light_intensity)
-        time.sleep(0.5)        
         self.sensor_motor.on_for_degrees(20, 90)
         values.append(self.color_sensor.reflected_light_intensity)
-        time.sleep(0.5)        
         self.sensor_motor.on_for_degrees(-20,90)
         return values
 
