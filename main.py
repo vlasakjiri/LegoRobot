@@ -2,14 +2,14 @@
 
 import time
 
-from modules.helpers import *
+import modules.helpers as helpers
 from modules.io import IO
 
 
 def Main():
     io = IO()
     while(True):
-        debug_print(io.directions_free())
+        helpers.debug_print(io.directions_free())
         time.sleep(5)
 
 
