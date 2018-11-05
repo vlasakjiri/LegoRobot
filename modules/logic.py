@@ -1,12 +1,9 @@
 """
 Provides logic for finding the best move.
 """
-import numpy as np
 
 from enum import Enum
-from map import Map_tile
-from map import Rotation
-from map import Map
+from modules.map_module import Map, Map_tile, Rotation
 
 
 class Test():

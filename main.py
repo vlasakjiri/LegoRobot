@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import time
-
+import sys
 import modules.helpers as helpers
-from modules.map import Map
+from modules.map_module import Map
 from modules.io import IO
 from modules.logic import Test, Moves
 
@@ -24,7 +24,7 @@ def Main():
             io.go_left()
 
         elif(move == Moves.fwd):
-            map.go_forward()()
+            map.go_forward()
             io.go_forward()
 
         elif(move == Moves.right):
