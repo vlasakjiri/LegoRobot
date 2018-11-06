@@ -18,8 +18,8 @@ class IO():
         self.lm_right = LargeMotor(self.lm_right_port)
         self.move_degrees = 500
         self.move_speed = 35
-        self.steering_turn_speed = 35
-        self.steering_turn_degrees = 270
+        self.steering_turn_speed = 30
+        self.steering_turn_degrees = 285
 
         # small motor
         self.sm_port = "outC"

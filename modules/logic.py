@@ -8,14 +8,15 @@ from modules.map_module import Map, Map_tile, Rotation
 
 class Test():
     def act(self, mapObj: Map):
+        rotation = mapObj.rotation
         adjacent = []
-        adjacent.append(mapObj.get_forward_tile_value())
-        mapObj.rotation += 1
-        adjacent.append(mapObj.get_forward_tile_value())
-        mapObj.rotation += 1
-        adjacent.append(mapObj.get_forward_tile_value())
-        mapObj.rotation += 1
-        adjacent.append(mapObj.get_forward_tile_value())
+        adjacent.append(mapObj.get_forward_tile_value(rotation))
+        rotation += 1
+        adjacent.append(mapObj.get_forward_tile_value(rotation))
+        rotation += 1
+        adjacent.append(mapObj.get_forward_tile_value(rotation))
+        rotation += 1
+        adjacent.append(mapObj.get_forward_tile_value(rotation))
 
         try:
             return Moves(adjacent.index(Map_tile.empty))

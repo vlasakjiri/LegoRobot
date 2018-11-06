@@ -1,4 +1,5 @@
 from enum import Enum
+from modules.helpers import debug_print
 
 
 class Map_tile(Enum):
@@ -65,15 +66,17 @@ class Map():
                 return None
             return (position[0], position[1] - 1)
 
-    def get_forward_tile_value(self):
+    def get_forward_tile_value(self, rotation):
         fwd_pos = self.__get_forward_tile_pos__(self.current_position,
-                                                self.rotation)
+                                                rotation)
         if fwd_pos is None:
             return None
 
         return self.map[fwd_pos[0]][fwd_pos[1]]
 
     def go_forward(self):
+        debug_print("go fwd")
+
         self.map[self.current_position[0]][self.current_position[1]
                                            ] = Map_tile.empty_driven_through
 
@@ -83,14 +86,19 @@ class Map():
                  ][self.current_position[1]] = Map_tile.robot
 
     def go_left(self):
+        debug_print("go left")
         self.rotation = self.rotation - 1
         self.go_forward()
 
     def go_right(self):
+        debug_print("go right")
+
         self.rotation = self.rotation + 1
         self.go_forward()
 
     def go_back(self):
+        debug_print("go back")
+
         self.rotation = self.rotation + 2
         self.go_forward()
 
@@ -101,7 +109,7 @@ class Map():
             1 = empty
             0 = wall
         """
-        for i in range(-1, 2, 1):
+        for i in range(-1, 2):
             to_set = Map_tile.wall
             if values[i + 1]:
                 to_set = Map_tile.empty
