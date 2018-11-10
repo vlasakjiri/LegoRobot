@@ -6,12 +6,13 @@ import modules.helpers as helpers
 from modules.map_module import Map
 from modules.io import IO
 from modules.logic import Test, Moves
-
+from modules.map_saving import Map_saver
 
 def Main():
     map = Map()
     io = IO()
     logic = Test()
+    saver = Map_saver(map)
     while(True):
         sensors = io.directions_free()
         helpers.debug_print(sensors)
