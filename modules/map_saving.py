@@ -7,19 +7,35 @@ from modules.map_module import Map_tile
 class Map_saver():
     def __init__(self, map):
         self.button = Button()
-        self.thread = threading.Thread(target=self.save_on_interval)
+        self.thread = threading.Thread(target=self.__saver_loop)
         self.thread.setDaemon(True)
-        self.button.on_up += self.load_map
-        self.button.on_down += self.thread.start
         self.lock = threading.Lock()
         self.interval = 3
         self.map = map
-        
+        self.thread.start()
 
-    def save_on_interval(self):
+    def __wait_for_btn(self):
         while True:
-            sleep(self.interval)
-            self.save_map()
+            sleep(0.01)
+            if self.button.any() and self.button.down:
+                break
+
+    def __saver_loop(self):
+        cycles = 0
+        cycles_max = self.interval * 100
+        while True:
+            self.__wait_for_btn()
+            sleep(0.01)
+            cycles += 1
+            if self.button.any():
+                if self.button.up:
+                    self.load_map()
+                    
+                elif self.button.down:
+                    self.__wait_for_btn()
+
+            if cycles >= cycles_max:
+                self.save_map()
 
     def save_map(self):
         self.lock.acquire()
