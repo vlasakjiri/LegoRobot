@@ -9,34 +9,34 @@ from modules.logic import Test, Moves
 from modules.map_saving import Map_saver
 
 def Main():
-    map = Map()
+    map_var = Map()
     io = IO()
     logic = Test()
-    saver = Map_saver(map)
+    saver = Map_saver(map_var)
     while(True):
         sensors = io.directions_free()
         helpers.debug_print(sensors)
-        map.write_sensor_values(sensors)
-        helpers.debug_print(map)
-        move = logic.act(map)
-        helpers.debug_print(map.current_position)
-        helpers.debug_print(map.rotation)
+        map_var.write_sensor_values(sensors)
+        helpers.debug_print(map_var)
+        move = logic.act(map_var)
+        helpers.debug_print(map_var.current_position)
+        helpers.debug_print(map_var.rotation)
 
         if(move == Moves.left):
-            map.go_left()
+            map_var.go_left()
             io.go_left()
 
         elif(move == Moves.fwd):
             helpers.debug_print("fwd")
-            map.go_forward()
+            map_var.go_forward()
             io.go_forward()
 
         elif(move == Moves.right):
-            map.go_right()
+            map_var.go_right()
             io.go_right()
 
         elif(move == Moves.back):
-            map.go_back()
+            map_var.go_back()
             io.go_back()
 
         time.sleep(1)
