@@ -37,7 +37,7 @@ class Map():
         self.rotation = Rotation.up
         self.current_position = (3, 4)
         self.map = []
-        for i in range(6):
+        for _ in range(6):
             self.map.append([Map_tile.not_discovered] * 9)
         self.shape = (6, 9)
         self.map[3][4] = Map_tile.robot
