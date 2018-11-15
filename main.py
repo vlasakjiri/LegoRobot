@@ -13,10 +13,10 @@ def Main():
     map_var = Map()
     io = IO()
     logic = Test()
-    saver = Map_saver(map_var)
+    # saver = Map_saver(map_var)
     while(True):
+        io.read_sensors()
         sensors = io.directions_free()
-        debug_print(sensors)
         map_var.write_sensor_values(sensors)
         debug_print(map_var)
         move = logic.act(map_var)
