@@ -113,4 +113,4 @@ class IO():
         '''
         Returns list of bools (left, center, right), representing if the directions are free to move.
         '''
-        return [a == 0 for a in self.color_sensor_values
+        return [a == 0 for a in self.color_sensor_values]

@@ -47,7 +47,7 @@ def test():
 
     debug_print(io.lm_left.speed_p,
                 io.lm_left.speed_i, io.lm_left.speed_d)
-    for i in range(8):
+    for _ in range(8):
         io._IO__turn_left()
         time.sleep(0.5)
 
