@@ -18,15 +18,12 @@ def Main():
         map.write_sensor_values(sensors)
         helpers.debug_print(map)
         move = logic.act(map)
-        helpers.debug_print(map.current_position)
-        helpers.debug_print(map.rotation)
 
         if(move == Moves.left):
             map.go_left()
             io.go_left()
 
         elif(move == Moves.fwd):
-            helpers.debug_print("fwd")
             map.go_forward()
             io.go_forward()
 
@@ -54,5 +51,4 @@ def test():
 
 
 if __name__ == "__main__":
-    # Main()
-    test()
+    Main()

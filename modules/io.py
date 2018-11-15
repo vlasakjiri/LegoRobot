@@ -25,6 +25,9 @@ class IO():
         self.sm_port = "outC"
         self.sm = Motor(self.sm_port)
         self.sm_turn_speed = 30
+        self.sm_center_turn_angle = 90
+        self.sm_side_turn_angle = 110
+        self.sm_is_left = False
 
         # color sensonr
         self.color_sensor_port = "in1"
@@ -73,11 +76,16 @@ class IO():
         Returns list of bools (left, center, right), representing if the directions are free to move.
         '''
         values = []  # List[bool]
-        self.sm.on_for_degrees(self.sm_turn_speed, 90)
+        speed = self.sm_turn_speed
+        if(not self.sm_is_left):
+            speed = -self.sm_turn_speed
         values.append(self.color_sensor.reflected_light_intensity == 0)
-        self.sm.on_for_degrees(-self.sm_turn_speed, 90)
+        self.sm.on_for_degrees(speed, self.sm_center_turn_angle)
         values.append(self.color_sensor.reflected_light_intensity == 0)
-        self.sm.on_for_degrees(-self.sm_turn_speed, 90)
+        self.sm.on_for_degrees(speed, self.sm_side_turn_angle)
         values.append(self.color_sensor.reflected_light_intensity == 0)
-        self.sm.on_for_degrees(self.sm_turn_speed, 90)
+        if not self.sm_is_left:
+            values.reverse()
+        self.sm_is_left = not self.sm_is_left
+
         return values
