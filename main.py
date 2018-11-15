@@ -5,20 +5,20 @@ import sys
 import modules.helpers as helpers
 from modules.map_module import Map
 from modules.io import IO
-from modules.logic import Test, Moves
+from modules.logic import Logic, Moves
 from modules.map_saving import Map_saver
 
 def Main():
     map_var = Map()
     io = IO()
-    logic = Test()
+    logic = Logic(map_var)
     saver = Map_saver(map_var)
     while(True):
         sensors = io.directions_free()
         helpers.debug_print(sensors)
         map_var.write_sensor_values(sensors)
         helpers.debug_print(map_var)
-        move = logic.act(map_var)
+        move = logic.get_next_move()
         helpers.debug_print(map_var.current_position)
         helpers.debug_print(map_var.rotation)
 

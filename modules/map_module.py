@@ -34,12 +34,12 @@ class Map():
     """
 
     def __init__(self):
-        self.rotation = Rotation.up
-        self.current_position = (3, 4)
-        self.map = []
+        self.rotation: Rotation = Rotation.up
+        self.current_position: tuple = (3, 4)
+        self.map: list = []
         for _ in range(6):
             self.map.append([Map_tile.not_discovered] * 9)
-        self.shape = (6, 9)
+        self.shape: tuple = (6, 9)
         self.map[3][4] = Map_tile.robot
         self.map[3][3] = Map_tile.wall
         self.map[3][5] = Map_tile.wall
@@ -119,6 +119,14 @@ class Map():
             if(fwd_pos is not None):
                 self.map[fwd_pos[0]][fwd_pos[1]] = to_set
 
+    def rotation_from_position(self, position: tuple) -> Rotation:
+        '''
+        Only works in straight lines, not diagonals
+        '''
+        pos = self.current_position
+        if(pos[0] > position[0]):
+            return Rotation.left
+    
     def __str__(self):
         ret_str = ""
         for row in self.map:
