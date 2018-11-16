@@ -7,13 +7,24 @@ from modules.map_module import Map
 from modules.io import IO
 from modules.logic import Test, Moves
 from modules.map_saving import Map_saver
-
+from ev3dev.ev3 import Button
 
 def Main():
     map_var = Map()
     io = IO()
     logic = Test()
-    # saver = Map_saver(map_var)
+    saver = Map_saver(map_var)
+    button = Button()
+    
+    while(True):
+        if(button.any()):
+            if(button.up):
+                saver.load_map()
+                break
+            elif(button.down):
+                break
+        time.sleep(0.01)
+    
     while(True):
         io.read_sensors()
         sensors = io.directions_free()
@@ -38,6 +49,7 @@ def Main():
             io.go_back()
 
         time.sleep(1)
+        saver.save_map()
 
 
 def test():
