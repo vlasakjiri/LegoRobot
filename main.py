@@ -15,7 +15,7 @@ def Main():
     logic = Test()
     saver = Map_saver(map_var)
     button = Button()
-    
+    print("Ready")
     while(True):
         if(button.any()):
             if(button.up):
@@ -48,7 +48,6 @@ def Main():
             map_var.go_back()
             io.go_back()
 
-        time.sleep(1)
         saver.save_map()
 
 
