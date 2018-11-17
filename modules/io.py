@@ -25,11 +25,21 @@ class IO():
         self.sm_port = "outC"
         self.sm = Motor(self.sm_port)
         self.sm_turn_speed = 30
+        self.sm_center_turn_angle = 90
+        self.sm_side_turn_angle = 110
+        self.sm_is_left = False
 
-        # color sensonr
+        # color sensor
         self.color_sensor_port = "in1"
         self.color_sensor = ColorSensor(self.color_sensor_port)
         self.color_sensor.mode = ColorSensor.MODE_COL_REFLECT
+        self.color_sensor_values = []
+
+        # ultrasonic sensor
+        self.ultrasonic_sensor_port = "in4"
+        self.ultrasonic_sensor = UltrasonicSensor(self.ultrasonic_sensor_port)
+        self.ultrasonic_sensor.mode = 'US-DIST-CM'
+        self.ultrasonic_sensor_values = []
 
     def go_left(self):
         self.__turn_left()
@@ -68,16 +78,39 @@ class IO():
         self.lm_right.on_for_degrees(
             -self.move_speed, self.move_degrees, block=True)
 
+    def read_sensors(self):
+        self.color_sensor_values = []  # List[float]
+        self.ultrasonic_sensor_values = []
+        speed = self.sm_turn_speed
+        if(self.sm_is_left):
+            speed = -self.sm_turn_speed
+
+        # side 1
+        self.color_sensor_values.append(
+            self.color_sensor.reflected_light_intensity)
+        self.ultrasonic_sensor_values.append(
+            self.ultrasonic_sensor.distance_centimeters)
+
+        # center
+        self.sm.on_for_degrees(speed, self.sm_center_turn_angle)
+        self.color_sensor_values.append(
+            self.color_sensor.reflected_light_intensity)
+        self.ultrasonic_sensor_values.append(
+            self.ultrasonic_sensor.distance_centimeters)
+
+        # side 2
+        self.sm.on_for_degrees(speed, self.sm_side_turn_angle)
+        self.color_sensor_values.append(
+            self.color_sensor.reflected_light_intensity)
+        self.ultrasonic_sensor_values.append(
+            self.ultrasonic_sensor.distance_centimeters)
+
+        if not self.sm_is_left:
+            self.color_sensor_values.reverse()
+        self.sm_is_left = not self.sm_is_left
+
     def directions_free(self)->List[bool]:
         '''
         Returns list of bools (left, center, right), representing if the directions are free to move.
         '''
-        values = []  # List[bool]
-        self.sm.on_for_degrees(self.sm_turn_speed, 90)
-        values.append(self.color_sensor.reflected_light_intensity == 0)
-        self.sm.on_for_degrees(-self.sm_turn_speed, 90)
-        values.append(self.color_sensor.reflected_light_intensity == 0)
-        self.sm.on_for_degrees(-self.sm_turn_speed, 90)
-        values.append(self.color_sensor.reflected_light_intensity == 0)
-        self.sm.on_for_degrees(self.sm_turn_speed, 90)
-        return values
+        return [a == 0 for a in self.color_sensor_values]
