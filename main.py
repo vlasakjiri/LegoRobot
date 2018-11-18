@@ -5,13 +5,14 @@ import sys
 from modules.helpers import debug_print
 from modules.map_module import Map
 from modules.io import IO
-from modules.logic import Test, Moves
+from modules.logic import Logic, Moves
 from modules.map_saving import Map_saver
 from ev3dev.ev3 import Button
 
 def Main():
     map_var = Map()
     io = IO()
+<<<<<<< HEAD
     logic = Test()
     saver = Map_saver(map_var)
     button = Button()
@@ -25,12 +26,18 @@ def Main():
                 break
         time.sleep(0.01)
     
+=======
+    logic = Logic(map_var)
+    saver = Map_saver(map_var)
+>>>>>>> dev
     while(True):
         io.read_sensors()
         sensors = io.directions_free()
         map_var.write_sensor_values(sensors)
-        debug_print(map_var)
-        move = logic.act(map_var)
+        helpers.debug_print(map_var)
+        move = logic.get_next_move()
+        helpers.debug_print(map_var.current_position)
+        helpers.debug_print(map_var.rotation)
 
         if(move == Moves.left):
             map_var.go_left()

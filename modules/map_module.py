@@ -34,18 +34,18 @@ class Map():
     """
 
     def __init__(self):
-        self.rotation = Rotation.up
-        self.current_position = (3, 4)
-        self.map = []
+        self.rotation: Rotation = Rotation.up
+        self.current_position: tuple = (3, 4)
+        self.map: list = []
         for _ in range(6):
             self.map.append([Map_tile.not_discovered] * 9)
-        self.shape = (6, 9)
+        self.shape: tuple = (6, 9)
         self.map[3][4] = Map_tile.robot
         self.map[3][3] = Map_tile.wall
         self.map[3][5] = Map_tile.wall
         self.map[2][4] = Map_tile.empty
 
-    def __get_forward_tile_pos__(self, position, rotation):
+    def get_forward_tile_pos(self, position, rotation):
         if rotation == Rotation.up:
             if position[0] - 1 < 0:
                 return None
@@ -67,7 +67,7 @@ class Map():
             return (position[0], position[1] - 1)
 
     def get_forward_tile_value(self, rotation):
-        fwd_pos = self.__get_forward_tile_pos__(self.current_position,
+        fwd_pos = self.get_forward_tile_pos(self.current_position,
                                                 rotation)
         if fwd_pos is None:
             return None
@@ -80,7 +80,7 @@ class Map():
         self.map[self.current_position[0]][self.current_position[1]
                                            ] = Map_tile.empty_driven_through
 
-        self.current_position = self.__get_forward_tile_pos__(
+        self.current_position = self.get_forward_tile_pos(
             self.current_position, self.rotation)
         self.map[self.current_position[0]
                  ][self.current_position[1]] = Map_tile.robot
@@ -114,7 +114,7 @@ class Map():
             if values[i + 1]:
                 to_set = Map_tile.empty
 
-            fwd_pos = self.__get_forward_tile_pos__(
+            fwd_pos = self.get_forward_tile_pos(
                 self.current_position, self.rotation + i)
             if(fwd_pos is not None):
                 self.map[fwd_pos[0]][fwd_pos[1]] = to_set
