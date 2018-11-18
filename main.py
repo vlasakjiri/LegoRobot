@@ -12,32 +12,18 @@ from ev3dev.ev3 import Button
 def Main():
     map_var = Map()
     io = IO()
-<<<<<<< HEAD
-    logic = Test()
-    saver = Map_saver(map_var)
-    button = Button()
-    print("Ready")
-    while(True):
-        if(button.any()):
-            if(button.up):
-                saver.load_map()
-                break
-            elif(button.down):
-                break
-        time.sleep(0.01)
-    
-=======
     logic = Logic(map_var)
-    saver = Map_saver(map_var)
->>>>>>> dev
+    button = Button()
+    saver = Map_saver(map_var, button)
+    saver.wait_for_load()
     while(True):
         io.read_sensors()
         sensors = io.directions_free()
         map_var.write_sensor_values(sensors)
-        helpers.debug_print(map_var)
+        debug_print(map_var)
         move = logic.get_next_move()
-        helpers.debug_print(map_var.current_position)
-        helpers.debug_print(map_var.rotation)
+        debug_print(map_var.current_position)
+        debug_print(map_var.rotation)
 
         if(move == Moves.left):
             map_var.go_left()
@@ -55,6 +41,9 @@ def Main():
             map_var.go_back()
             io.go_back()
 
+        if button.any():
+            saver.wait_for_load()
+        
         saver.save_map()
 
 
