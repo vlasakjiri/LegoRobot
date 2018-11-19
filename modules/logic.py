@@ -18,16 +18,26 @@ class Logic():
             if(self.mapObj.get_forward_tile_pos(self.mapObj.current_position, rotation) == position):
                 return Moves((rotation - self.mapObj.rotation.value).value)
                 
+    def get_next_move(self):
+        result = self.__get_move(Map_tile.empty)
+        if result is not None:
+            return result
+        result = self.__get_move(Map_tile.not_discovered)
+        if result is not None:
+            return result
+        result = self.__get_move(Map_tile.ghost_path)
+        if result is not None:
+            return result
+        
 
-
-    def get_next_move(self) -> tuple:
-        queue = collections.deque([[self.mapObj.current_position]])
+    def __get_move(self, tile: Map_tile) -> tuple:
+        queue = collections.deque([[self.mapObj.current_position[::-1]]])
         seen = set([self.mapObj.current_position])
         while queue:
             path = queue.popleft()
-            x, y = reversed(path[-1])
-            if self.mapObj.map[y][x] == Map_tile.empty or self.mapObj.map[y][x] == Map_tile.not_discovered or self.mapObj.map[y][x] == Map_tile.ghost_path:
-                return self.__move_from_adj_position(path[1])
+            x, y = path[-1]
+            if self.mapObj.map[y][x] == tile:
+                return self.__move_from_adj_position(path[1][::-1])
             for x2, y2 in ((x+1,y), (x-1,y), (x,y+1), (x,y-1)):
                 if 0 <= x2 < 9 and 0 <= y2 < 6 and self.mapObj.map[y2][x2] != Map_tile.wall and (x2, y2) not in seen:
                     queue.append(path + [(x2, y2)])
