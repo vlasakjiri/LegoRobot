@@ -9,6 +9,13 @@ class Map_tile(Enum):
     wall = 3
     ghost_path = 4
     robot = 5
+    ghost = 6
+
+
+class Ghost_mapping_type(Enum):
+    static = 0
+    rows = 1
+    columns = 2
 
 
 class Rotation(Enum):
@@ -34,75 +41,70 @@ class Map():
     """
 
     def __init__(self):
-        self.rotation: Rotation = Rotation.up
-        self.current_position: tuple = (3, 4)
-        self.map: list = []
+        self.rotation = Rotation.up
+        self.current_position = (3, 4)
+        self.map = []
         for _ in range(6):
             self.map.append([Map_tile.not_discovered] * 9)
-        self.shape: tuple = (6, 9)
+        self.shape = (6, 9)
         self.map[3][4] = Map_tile.robot
         self.map[3][3] = Map_tile.wall
         self.map[3][5] = Map_tile.wall
         self.map[2][4] = Map_tile.empty
 
-    def get_forward_tile_pos(self, position, rotation):
+    def get_forward_tile_pos(self, position, rotation, cells):
         if rotation == Rotation.up:
-            if position[0] - 1 < 0:
+            if position[0] - cells < 0:
                 return None
-            return (position[0] - 1, position[1])
+            return (position[0] - cells, position[1])
 
         if rotation == Rotation.right:
-            if position[1] + 1 >= self.shape[1]:
+            if position[1] + cells >= self.shape[1]:
                 return None
-            return (position[0], position[1] + 1)
+            return (position[0], position[1] + cells)
 
         if rotation == Rotation.down:
-            if position[0] + 1 >= self.shape[0]:
+            if position[0] + cells >= self.shape[0]:
                 return None
-            return (position[0] + 1, position[1])
+            return (position[0] + cells, position[1])
 
         if rotation == Rotation.left:
-            if position[1] - 1 < 0:
+            if position[1] - cells < 0:
                 return None
-            return (position[0], position[1] - 1)
+            return (position[0], position[1] - cells)
 
     def get_forward_tile_value(self, rotation):
         fwd_pos = self.get_forward_tile_pos(self.current_position,
-                                                rotation)
+                                            rotation,
+                                            1)
         if fwd_pos is None:
             return None
 
         return self.map[fwd_pos[0]][fwd_pos[1]]
 
     def go_forward(self):
-        debug_print("go fwd")
 
         self.map[self.current_position[0]][self.current_position[1]
                                            ] = Map_tile.empty_driven_through
 
         self.current_position = self.get_forward_tile_pos(
-            self.current_position, self.rotation)
+            self.current_position, self.rotation, 1)
         self.map[self.current_position[0]
                  ][self.current_position[1]] = Map_tile.robot
 
     def go_left(self):
-        debug_print("go left")
         self.rotation = self.rotation - 1
         self.go_forward()
 
     def go_right(self):
-        debug_print("go right")
-
         self.rotation = self.rotation + 1
         self.go_forward()
 
     def go_back(self):
-        debug_print("go back")
-
         self.rotation = self.rotation + 2
         self.go_forward()
 
-    def write_sensor_values(self, values):
+    def write_color_sensor(self, values):
         """
             Expects input in array of bools
             [left, up, right]
@@ -115,9 +117,24 @@ class Map():
                 to_set = Map_tile.empty
 
             fwd_pos = self.get_forward_tile_pos(
-                self.current_position, self.rotation + i)
+                self.current_position, self.rotation + i, 1)
             if(fwd_pos is not None):
                 self.map[fwd_pos[0]][fwd_pos[1]] = to_set
+
+    def ghost_static(self, pos):
+        self.map[pos[0]][pos[1]] = Map_tile.ghost
+
+    def write_us_values(self, values):
+        for i in range(-1, 2):
+            distance = values[i+1]
+            if(distance is not None):
+                fwd_pos = self.get_forward_tile_pos(
+                    self.current_position, self.rotation + i, distance)
+                self.ghost_static(fwd_pos)
+
+    def write_sensor_values(self, clr_sensor, us_sensor):
+        self.write_color_sensor(clr_sensor)
+        self.write_us_values(us_sensor)
 
     def __str__(self):
         ret_str = ""
