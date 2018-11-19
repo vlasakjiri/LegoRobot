@@ -1,8 +1,10 @@
 
 import time
 from ev3dev2.motor import Motor, LargeMotor
-from ev3dev2.sensor.lego import ColorSensor, UltrasonicSensor
+from ev3dev2.sensor.lego import ColorSensor, UltrasonicSensor, TouchSensor
 from typing import List
+from math import sqrt
+from modules.helpers import debug_print
 
 
 class IO():
@@ -16,10 +18,11 @@ class IO():
         self.lm_right_port = "outA"
         self.lm_left = LargeMotor(self.lm_left_port)
         self.lm_right = LargeMotor(self.lm_right_port)
-        self.move_degrees = 500
+        self.move_degrees = 570
         self.move_speed = 35
         self.steering_turn_speed = 30
-        self.steering_turn_degrees = 285
+        self.steering_turn_degrees = 450
+        self.steering_turn_fwd_degrees = 150
 
         # small motor
         self.sm_port = "outC"
@@ -35,48 +38,79 @@ class IO():
         self.color_sensor.mode = ColorSensor.MODE_COL_REFLECT
         self.color_sensor_values = []
 
+        # regulations
+        self.regulation_desired_value = 2
+        self.regulation_max_diff = 2
+        self.regulation_p = 2.5
+        self.move_time = 1
+        self.regulation_tick = 0.03
+
         # ultrasonic sensor
         self.ultrasonic_sensor_port = "in4"
         self.ultrasonic_sensor = UltrasonicSensor(self.ultrasonic_sensor_port)
         self.ultrasonic_sensor.mode = 'US-DIST-CM'
+        self.ultrasonic_tile_length = 30
+        self.ultrasonic_max_value = 255
         self.ultrasonic_sensor_values = []
 
     def go_left(self):
         self.__turn_left()
-        self.__move()
+        self.__move_reg(self.steering_turn_fwd_degrees)
 
     def go_right(self):
         self.__turn_right()
-        self.__move()
+        self.__move_reg(self.steering_turn_fwd_degrees)
 
     def go_forward(self):
-        self.__move()
+        self.__move_reg(self.move_degrees)
 
     def go_back(self):
-        self.__turn_around()
-        self.__move()
+        self.lm_left.stop()
+        self.lm_right.on_for_degrees(
+            self.steering_turn_speed, self.steering_turn_degrees)
+        self.__turn_right()
 
     def __turn_left(self):
-        self.__turn(self.steering_turn_speed,
-                    -self.steering_turn_speed, self.steering_turn_degrees)
+        self.lm_left.stop()
+        self.lm_right.on_for_degrees(-self.steering_turn_speed,
+                                     self.steering_turn_degrees)
 
     def __turn_right(self):
-        self.__turn(-self.steering_turn_speed,
-                    self.steering_turn_speed, self.steering_turn_degrees)
+        self.lm_right.stop()
+        self.lm_left.on_for_degrees(-self.steering_turn_speed,
+                                    self.steering_turn_degrees)
 
-    def __turn_around(self):
-        self.__turn(-self.steering_turn_speed,
-                    self.steering_turn_speed, self.steering_turn_degrees*2)
-
-    def __turn(self, left_speed: int, right_speed: int, degrees: int)->None:
-        self.lm_left.on_for_degrees(left_speed, degrees, block=False)
-        self.lm_right.on_for_degrees(right_speed, degrees, block=True)
-
-    def __move(self)->None:
+    def __move(self, degrees)->None:
         self.lm_left.on_for_degrees(
-            -self.move_speed, self.move_degrees, block=False)
+            -self.move_speed, degrees, block=False)
         self.lm_right.on_for_degrees(
-            -self.move_speed, self.move_degrees, block=True)
+            -self.move_speed, degrees, block=True)
+
+    def __reg(self):
+        val = self.color_sensor.reflected_light_intensity
+        diff = (self.regulation_desired_value - val)
+        if diff >= 0 and val > 0:
+            diff = min(diff, self.regulation_max_diff)
+        elif val == 0:
+            diff = 0
+        else:
+            diff = -min(abs(diff), self.regulation_max_diff)
+        diff *= self.regulation_p
+        if self.sm_is_left:
+            return (-self.move_speed + diff, -self.move_speed - diff)
+
+        return (-self.move_speed - diff, -self.move_speed + diff)
+
+    def __move_reg(self, degrees):
+        start_l, start_r = (self.lm_left.degrees, self.lm_right.degrees)
+        while (abs(start_l - self.lm_left.degrees) < degrees
+               or abs(start_r - self.lm_right.degrees) < degrees):
+            speed_l, speed_r = self.__reg()
+            self.lm_left.on(speed_l, brake=True)
+            self.lm_right.on(speed_r, brake=True)
+            time.sleep(self.regulation_tick)
+        self.lm_left.stop()
+        self.lm_right.stop()
 
     def read_sensors(self):
         self.color_sensor_values = []  # List[float]
@@ -106,6 +140,7 @@ class IO():
             self.ultrasonic_sensor.distance_centimeters)
 
         if not self.sm_is_left:
+            self.ultrasonic_sensor_values.reverse()
             self.color_sensor_values.reverse()
         self.sm_is_left = not self.sm_is_left
 
@@ -114,3 +149,12 @@ class IO():
         Returns list of bools (left, center, right), representing if the directions are free to move.
         '''
         return [a == 0 for a in self.color_sensor_values]
+
+    def ghost_distance(self)->List[int]:
+        '''
+        Returns list of ints (left, center, right), representing the distance from closest ghost.
+        '''
+        return [int(a) // self.ultrasonic_tile_length
+                if a < self.ultrasonic_max_value and a // self.ultrasonic_tile_length > 0
+                else None
+                for a in self.ultrasonic_sensor_values]
