@@ -54,6 +54,16 @@ class Map():
         self.map[3][5] = Map_tile.wall
         self.map[2][4] = Map_tile.empty
 
+    def load_map_data(self, map_data):
+        self.rotation = Rotation.up
+        self.current_position = (3, 4)
+        self.map = map_data
+        self.shape = (6, 9)
+        self.map[3][4] = Map_tile.robot
+        self.map[3][3] = Map_tile.wall
+        self.map[3][5] = Map_tile.wall
+        self.map[2][4] = Map_tile.empty
+
     def get_forward_tile_pos(self, position, rotation, cells):
         if rotation == Rotation.up:
             if position[0] - cells < 0:

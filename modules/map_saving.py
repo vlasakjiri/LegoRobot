@@ -12,7 +12,7 @@ class Map_saver():
     def save_map(self):
         debug_print("saved")
         with open("map.json", "w") as f:
-            json.dump(self.map.map, f, default=lambda obj: obj.value)
+            json.dump(self.map.map, f, default=lambda obj: obj.value if obj.value != 5 else 1)                
 
     def wait_for_load(self):
         while(True):
@@ -28,5 +28,4 @@ class Map_saver():
         debug_print("loaded")
         debug_print(self.map)
         with open("map.json", "r+") as f:
-            self.map.map = [[Map_tile(item) for item in col]
-                            for col in json.load(f)]
+            self.map.load_map_data([[Map_tile(item) for item in col]for col in json.load(f)])

@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 
-import time
+import os
 import sys
+import time
+
+from ev3dev.ev3 import Button
 from modules.helpers import debug_print
-from modules.map_module import Map, Ghost_mapping_type
 from modules.io import IO
 from modules.logic import Logic, Moves
+from modules.map_module import Ghost_mapping_type, Map
 from modules.map_saving import Map_saver
-import os
-
 
 os.system('setfont Lat15-TerminusBold14')
-# from ev3dev.ev3 import Button
 
 # def make_move(map_var, io, move):
 
@@ -36,8 +36,9 @@ def Main():
     map_var = Map(Ghost_mapping_type.none)
     io = IO()
     logic = Logic(map_var)
-#     saver = Map_saver(map_var, button)
-#     saver.wait_for_load()
+    button = Button()
+    saver = Map_saver(map_var, button)
+    saver.wait_for_load()
     switch = {
         Moves.fwd: lambda: [io.go_forward(), map_var.go_forward()],
         Moves.left: lambda: [io.go_left(), map_var.go_left()],
@@ -130,4 +131,4 @@ def logic_test():
 
 
 if __name__ == "__main__":
-    turn_test()
+    Main()
