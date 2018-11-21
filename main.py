@@ -43,7 +43,6 @@ def Main():
         move = logic.get_next_move()
         debug_print(map_var.current_position)
         debug_print(map_var.rotation)
-    saver = Map_saver(map_var)
     switch = {
         Moves.fwd: lambda: [io.go_forward(), map_var.go_forward()],
         Moves.left: lambda: [io.go_left(), map_var.go_left()],
