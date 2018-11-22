@@ -53,6 +53,10 @@ def Main():
         move = logic.get_next_move()
         debug_print(map_var)
         switch[move]()
+        if button.any():
+            saver.wait_for_load()
+        
+        saver.save_map()
 
 
 def test():
