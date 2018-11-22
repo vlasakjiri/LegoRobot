@@ -1,6 +1,7 @@
 
 import time
 from ev3dev2.motor import Motor, LargeMotor
+from ev3dev.ev3 import Button
 from ev3dev2.sensor.lego import ColorSensor, UltrasonicSensor, TouchSensor
 from typing import List
 from math import sqrt
@@ -29,6 +30,8 @@ class IO():
         self.steering_turn_fwd_degrees = 150  # distance to move after turning
         # distance at which sensors start spinning
         self.steering_sensor_check_degrees = 50
+
+        self.btn = Button()
 
         # small motor
         self.sm_port = "outC"
@@ -135,6 +138,9 @@ class IO():
         while(time.time() <= timeout):  # check for touch sensor
             if(self.touch_left.is_pressed or self.touch_right.is_pressed):
                 return False
+            if(self.btn.left or self.btn.right):
+                debug_print("pressed")
+                return None
             time.sleep(0.01)
         return True
 
@@ -147,10 +153,16 @@ class IO():
             speed_l, speed_r = self.__reg()
             self.lm_left.on(speed_l, brake=True)
             self.lm_right.on(speed_r, brake=True)
-            if(not self.__check_button()):
+            ok = self.__check_button()
+            if(ok is False):
                 self.lm_left.stop()
                 self.lm_right.stop()
                 return False
+            elif(ok is None):
+                debug_print("none")
+                self.lm_left.stop()
+                self.lm_right.stop()
+                return None
             if((distance_l >= sensor_degrees or distance_r >= sensor_degrees)
                and not t.isAlive()):
                 t.start()

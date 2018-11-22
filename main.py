@@ -62,11 +62,15 @@ def Main():
         move = logic.get_next_move()
         debug_print(map_var)
         ok = motors[move]()
-        if(not ok):
+        if(ok is False):
             io.after_crash()
             map_var.rotation += int(move)
             continue
+        elif(ok is None):
+            saver.wait_for_load()
+            continue
         mapping[move]()
+        saver.save_map()
 
 
 def test():
