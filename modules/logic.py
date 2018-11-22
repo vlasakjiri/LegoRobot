@@ -37,8 +37,24 @@ class Logic():
             path = queue.popleft()
             x, y = path[-1]
             if self.mapObj.map[y][x] == tile:
+                #print(path, queue)
                 return self.__move_from_adj_position(path[1][::-1])
+<<<<<<< HEAD
             for x2, y2 in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
+=======
+            #print("---------")
+            rotation = self.mapObj.rotation
+            for _ in range(4):
+                #print(rotation)
+                forw_pos = self.mapObj.get_forward_tile_pos((y, x), rotation, 1)
+                #print(forw_pos, y, x, self.mapObj.current_position)
+                rotation = rotation + 1
+
+                if(forw_pos is None):
+                    continue
+                
+                y2, x2 = forw_pos
+>>>>>>> logic
                 if 0 <= x2 < 9 and 0 <= y2 < 6 and self.mapObj.map[y2][x2] != Map_tile.wall and (x2, y2) not in seen:
                     queue.append(path + [(x2, y2)])
                     seen.add((x2, y2))
