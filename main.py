@@ -39,20 +39,34 @@ def Main():
     button = Button()
     saver = Map_saver(map_var, button)
     saver.wait_for_load()
-    switch = {
-        Moves.fwd: lambda: [io.go_forward(), map_var.go_forward()],
-        Moves.left: lambda: [io.go_left(), map_var.go_left()],
-        Moves.right: lambda: [io.go_right(), map_var.go_right()],
-        Moves.back: lambda: [io.go_back(), map_var.go_back()]
+    print("READY")
+    motors = {
+        Moves.fwd: lambda: io.go_forward(),
+        Moves.left: lambda: io.go_left(),
+        Moves.right: lambda: io.go_right(),
+        Moves.back: lambda: io.go_back()
     }
-    switch[Moves.fwd]()
+    mapping = {
+        Moves.fwd: lambda: map_var.go_forward(),
+        Moves.left: lambda: map_var.go_left(),
+        Moves.right: lambda: map_var.go_right(),
+        Moves.back: lambda: map_var.go_back()
+    }
+    motors[Moves.fwd]()
+    mapping[Moves.fwd]()
     while(True):
         clr_sensor = io.directions_free()
         us_sensor = io.ghost_distance()
         map_var.write_sensor_values(clr_sensor, us_sensor)
+        debug_print(map_var)
         move = logic.get_next_move()
         debug_print(map_var)
-        switch[move]()
+        ok = motors[move]()
+        if(not ok):
+            io.after_crash()
+            map_var.rotation += int(move)
+            continue
+        mapping[move]()
 
 
 def test():
@@ -128,6 +142,14 @@ def logic_test():
         print(map_var)
         sensors = [a == "t" for a in input("write values")]
         map_var.write_color_sensor(sensors)
+
+
+def touch_sensor_test():
+    io = IO()
+    val = False
+    while True:
+        debug_print(io.go_forward())
+        time.sleep(1)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 Provides logic for finding the best move.
 """
 
-from enum import Enum
+from enum import IntEnum
 from modules.map_module import Map, Map_tile, Rotation
 from queue import Queue
 import collections
@@ -44,7 +44,7 @@ class Logic():
                     seen.add((x2, y2))
 
 
-class Moves(Enum):
+class Moves(IntEnum):
     fwd = 0
     right = 1
     back = 2

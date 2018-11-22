@@ -1,8 +1,8 @@
-from enum import Enum
+from enum import Enum, IntEnum
 from modules.helpers import debug_print
 
 
-class Map_tile(Enum):
+class Map_tile(IntEnum):
     empty = 0
     empty_driven_through = 1
     not_discovered = 2
@@ -12,14 +12,14 @@ class Map_tile(Enum):
     ghost = 6
 
 
-class Ghost_mapping_type(Enum):
+class Ghost_mapping_type(IntEnum):
     none = 0
     static = 1
     rows = 2
     columns = 4
 
 
-class Rotation(Enum):
+class Rotation(IntEnum):
     up = 0
     right = 1
     down = 2

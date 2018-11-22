@@ -23,6 +23,7 @@ class IO():
         self.move_sensor_check_degrees = 400
         self.move_degrees = 570  # one tile distance
         self.move_speed = 35
+        self.after_crash_degrees = 200
         self.steering_turn_speed = 30  # turning left or right
         self.steering_turn_degrees = 450
         self.steering_turn_fwd_degrees = 150  # distance to move after turning
@@ -57,45 +58,62 @@ class IO():
         self.ultrasonic_max_value = 255
         self.ultrasonic_sensor_values = []
 
+        # touch sensors
+        self.touch_right = TouchSensor("in2")
+        self.touch_left = TouchSensor("in3")
+
     def go_left(self):
-        self.__turn_left()
-        self.__move_reg(self.steering_turn_fwd_degrees,
-                        self.steering_sensor_check_degrees)
+        ok = self.__turn_left()
+        if(ok):
+            ok = self.__move_reg(self.steering_turn_fwd_degrees,
+                                 self.steering_sensor_check_degrees)
+        return ok
 
     def go_right(self):
-        self.__turn_right()
-        self.__move_reg(self.steering_turn_fwd_degrees,
-                        self.steering_sensor_check_degrees)
+        ok = self.__turn_right()
+        if(ok):
+            ok = self.__move_reg(self.steering_turn_fwd_degrees,
+                                 self.steering_sensor_check_degrees)
+        return ok
 
     def go_forward(self):
-        self.__move_reg(self.move_degrees, self.move_sensor_check_degrees)
+        return self.__move_reg(self.move_degrees, self.move_sensor_check_degrees)
 
     def go_back(self):
         self.__turn(stop_motor=self.lm_left, turn_motor=self.lm_right,
                     degrees=self.steering_turn_degrees, speed=self.steering_turn_speed)
-        self.__turn(stop_motor=self.lm_right, turn_motor=self.lm_left,
-                    degrees=self.steering_turn_degrees, speed=-self.steering_turn_speed)
+        return self.__turn(stop_motor=self.lm_right, turn_motor=self.lm_left,
+                           degrees=self.steering_turn_degrees, speed=-self.steering_turn_speed)
+
+    def after_crash(self):
+        debug_print("crash")
+        self.__move(self.after_crash_degrees, self.move_speed)
+        self.read_sensors()
 
     def __turn(self, stop_motor: Motor, turn_motor: Motor, degrees: int, speed: int):
         stop_motor.stop()
         start = turn_motor.degrees
         turn_motor.on(speed)
         while(abs(turn_motor.degrees - start) < degrees):
-            time.sleep(0.03)
+            if(not self.__check_button()):
+                self.lm_left.stop()
+                self.lm_right.stop()
+                return False
+        return True
 
     def __turn_left(self):
-        self.__turn(stop_motor=self.lm_left, turn_motor=self.lm_right,
-                    degrees=self.steering_turn_degrees, speed=-self.steering_turn_speed)
+        return self.__turn(stop_motor=self.lm_left, turn_motor=self.lm_right,
+                           degrees=self.steering_turn_degrees, speed=-self.steering_turn_speed)
 
     def __turn_right(self):
-        self.__turn(stop_motor=self.lm_right, turn_motor=self.lm_left,
-                    degrees=self.steering_turn_degrees, speed=-self.steering_turn_speed)
+        return self.__turn(stop_motor=self.lm_right, turn_motor=self.lm_left,
+                           degrees=self.steering_turn_degrees, speed=-self.steering_turn_speed)
 
-    def __move(self, degrees)->None:
+    def __move(self, degrees, speed)->None:
         self.lm_left.on_for_degrees(
-            -self.move_speed, degrees, block=False)
+            speed, degrees, block=False)
         self.lm_right.on_for_degrees(
-            -self.move_speed, degrees, block=True)
+            speed, degrees, block=True)
 
     def __reg(self):
         val = self.color_sensor.reflected_light_intensity
@@ -112,6 +130,14 @@ class IO():
 
         return (-self.move_speed - diff, -self.move_speed + diff)
 
+    def __check_button(self):
+        timeout = time.time() + self.regulation_tick
+        while(time.time() <= timeout):  # check for touch sensor
+            if(self.touch_left.is_pressed or self.touch_right.is_pressed):
+                return False
+            time.sleep(0.01)
+        return True
+
     def __move_reg(self, degrees, sensor_degrees):
         t = Thread(target=self.read_sensors)
         start_l, start_r = (self.lm_left.degrees, self.lm_right.degrees)
@@ -121,18 +147,18 @@ class IO():
             speed_l, speed_r = self.__reg()
             self.lm_left.on(speed_l, brake=True)
             self.lm_right.on(speed_r, brake=True)
+            if(not self.__check_button()):
+                self.lm_left.stop()
+                self.lm_right.stop()
+                return False
             if((distance_l >= sensor_degrees or distance_r >= sensor_degrees)
                and not t.isAlive()):
                 t.start()
-            timeout = time.time() + self.regulation_tick
-            while(time.time() <= timeout):
-                # check for touch sensor
 
-                time.sleep(0.01)
-            time.sleep(self.regulation_tick)
             distance_l = abs(start_l - self.lm_left.degrees)
             distance_r = abs(start_r - self.lm_right.degrees)
         t.join()
+        return True
 
     def read_sensors(self):
         self.color_sensor_values = []  # List[float]
