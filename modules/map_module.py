@@ -1,8 +1,8 @@
-from enum import Enum
+from enum import Enum, IntEnum
 from modules.helpers import debug_print
 
 
-class Map_tile(Enum):
+class Map_tile(IntEnum):
     empty = 0
     empty_driven_through = 1
     not_discovered = 2
@@ -12,13 +12,14 @@ class Map_tile(Enum):
     ghost = 6
 
 
-class Ghost_mapping_type(Enum):
-    static = 0
-    rows = 1
-    columns = 2
+class Ghost_mapping_type(IntEnum):
+    none = 0
+    static = 1
+    rows = 2
+    columns = 4
 
 
-class Rotation(Enum):
+class Rotation(IntEnum):
     up = 0
     right = 1
     down = 2
@@ -40,13 +41,14 @@ class Map():
     0,0 is at the top left, first y axis, then x axis.
     """
 
-    def __init__(self):
+    def __init__(self, mapping_type):
         self.rotation = Rotation.up
         self.current_position = (3, 4)
         self.map = []
         for _ in range(6):
             self.map.append([Map_tile.not_discovered] * 9)
         self.shape = (6, 9)
+        self.mapping_type = mapping_type
         self.map[3][4] = Map_tile.robot
         self.map[3][3] = Map_tile.wall
         self.map[3][5] = Map_tile.wall
@@ -85,8 +87,7 @@ class Map():
 
     def get_forward_tile_value(self, rotation):
         fwd_pos = self.get_forward_tile_pos(self.current_position,
-                                            rotation,
-                                            1)
+                                            rotation, 1)
         if fwd_pos is None:
             return None
 
@@ -128,7 +129,7 @@ class Map():
 
             fwd_pos = self.get_forward_tile_pos(
                 self.current_position, self.rotation + i, 1)
-            if(fwd_pos is not None):
+            if(fwd_pos is not None and self.map[fwd_pos[0]][fwd_pos[1]] is not Map_tile.empty_driven_through):
                 self.map[fwd_pos[0]][fwd_pos[1]] = to_set
 
     def ghost_static(self, pos):
@@ -140,7 +141,9 @@ class Map():
             if(distance is not None):
                 fwd_pos = self.get_forward_tile_pos(
                     self.current_position, self.rotation + i, distance)
-                self.ghost_static(fwd_pos)
+                if(fwd_pos is not None):
+                    if(self.mapping_type == Ghost_mapping_type.static):
+                        self.ghost_static(fwd_pos)
 
     def write_sensor_values(self, clr_sensor, us_sensor):
         self.write_color_sensor(clr_sensor)
