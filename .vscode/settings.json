@@ -1,4 +1,4 @@
 {
-    "files.eol": "\n",
-    "ev3devBrowser.download.exclude": "{**/.*,LICENSE,README.md}"
+    "python.linting.pylintEnabled": true,
+    "python.pythonPath": "C:\\Python37\\python.exe"
 }
