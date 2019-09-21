@@ -61,6 +61,10 @@ def Main():
         debug_print(map_var)
         move = logic.get_next_move()
         debug_print(map_var)
+        switch[move]()
+        if button.any():
+            saver.wait_for_load()
+        
         ok = motors[move]()
         if(ok is False):
             io.after_crash()
